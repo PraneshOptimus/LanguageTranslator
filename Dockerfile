@@ -1,11 +1,12 @@
-# Use a slim, official OpenJDK image as the base
-FROM openjdk:17-jdk-slim
+# Stage 1: The Build Stage
+FROM maven:3.8.6-openjdk-17 AS builder
+WORKDIR /app
+COPY pom.xml .
+COPY src ./src
+RUN mvn clean install -DskipTests
 
-# Copy the application's JAR file into the container
-COPY target/*.jar app.jar
-
-# Expose the port your application listens on
+# Stage 2: The Final (Runtime) Stage
+FROM openjdk:17-jre-slim
+COPY --from=builder /app/target/*.jar app.jar
 EXPOSE 8080
-
-# Define the command to run the application
 ENTRYPOINT ["java", "-jar", "/app.jar"]
