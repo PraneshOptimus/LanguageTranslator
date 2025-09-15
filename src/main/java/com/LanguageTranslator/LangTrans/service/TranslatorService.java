@@ -6,24 +6,25 @@ import com.google.cloud.translate.v3.TranslateTextRequest;
 import com.google.cloud.translate.v3.TranslationServiceClient;
 import com.google.cloud.translate.v3.TranslationServiceSettings;
 import org.springframework.stereotype.Service;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.io.ByteArrayInputStream;
 
 @Service
 public class TranslatorService {
-
-    // You can get this from your Google Cloud project dashboard
     private static final String GOOGLE_PROJECT_ID = "langtrans-472204";
     private static final String GOOGLE_LOCATION = "global";
 
-    // Path to your downloaded JSON key file
-    // Make sure this file is in src/main/resources/
-    private static final String CREDENTIALS_PATH = "src/main/resources/LangTrans.json";
-
     public String translateText(String text, String source, String target) throws IOException {
+        String credentialsJson = System.getenv("GOOGLE_CREDENTIALS");
+
+        if (credentialsJson == null || credentialsJson.isEmpty()) {
+            throw new IOException("Google credentials environment variable is not set.");
+        }
+
         try (TranslationServiceClient client = TranslationServiceClient.create(
                 TranslationServiceSettings.newBuilder()
-                        .setCredentialsProvider(com.google.api.gax.core.FixedCredentialsProvider.create(GoogleCredentials.fromStream(new FileInputStream(CREDENTIALS_PATH))))
+                        .setCredentialsProvider(com.google.api.gax.core.FixedCredentialsProvider.create(GoogleCredentials.fromStream(new ByteArrayInputStream(credentialsJson.getBytes(StandardCharsets.UTF_8)))))
                         .build())) {
 
             LocationName parent = LocationName.of(GOOGLE_PROJECT_ID, GOOGLE_LOCATION);
