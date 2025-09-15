@@ -9,9 +9,8 @@ import java.io.IOException;
 @Service
 public class TranslatorService {
 
-    // IMPORTANT: Change this to "http://localhost:5000/translate" if you are
-    // running the local Docker container as we discussed.
-    private static final String API_URL = "http://localhost:5000/translate";
+    // Change this URL to a public, online endpoint
+    private static final String API_URL = "https://libretranslate.de/translate";
     private final OkHttpClient client = new OkHttpClient();
 
     public String translateText(String text, String source, String target) throws IOException {
