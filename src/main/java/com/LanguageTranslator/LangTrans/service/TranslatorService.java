@@ -13,7 +13,7 @@ import java.io.ByteArrayInputStream;
 
 @Service
 public class TranslatorService {
-    private static final String GOOGLE_PROJECT_ID = "langtrans-472204";
+    private static final String GOOGLE_PROJECT_ID = "language-472206";
     private static final String GOOGLE_LOCATION = "global";
 
     public String translateText(String text, String source, String target) throws IOException {
