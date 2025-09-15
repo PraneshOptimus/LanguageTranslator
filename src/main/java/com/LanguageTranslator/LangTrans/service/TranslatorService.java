@@ -1,5 +1,6 @@
 package com.LanguageTranslator.LangTrans.service;
 
+import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.translate.v3.LocationName;
 import com.google.cloud.translate.v3.TranslateTextRequest;
@@ -24,7 +25,7 @@ public class TranslatorService {
 
         try (TranslationServiceClient client = TranslationServiceClient.create(
                 TranslationServiceSettings.newBuilder()
-                        .setCredentialsProvider(com.google.api.gax.core.FixedCredentialsProvider.create(GoogleCredentials.fromStream(new ByteArrayInputStream(credentialsJson.getBytes(StandardCharsets.UTF_8)))))
+                        .setCredentialsProvider(FixedCredentialsProvider.create(GoogleCredentials.fromStream(new ByteArrayInputStream(credentialsJson.getBytes(StandardCharsets.UTF_8)))))
                         .build())) {
 
             LocationName parent = LocationName.of(GOOGLE_PROJECT_ID, GOOGLE_LOCATION);
