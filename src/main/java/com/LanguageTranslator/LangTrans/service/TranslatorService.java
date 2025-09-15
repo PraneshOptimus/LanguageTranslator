@@ -1,40 +1,42 @@
 package com.LanguageTranslator.LangTrans.service;
 
-import okhttp3.*;
-import org.json.JSONObject;
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.cloud.translate.v3.LocationName;
+import com.google.cloud.translate.v3.TranslateTextRequest;
+import com.google.cloud.translate.v3.TranslationServiceClient;
+import com.google.cloud.translate.v3.TranslationServiceSettings;
 import org.springframework.stereotype.Service;
-
+import java.io.FileInputStream;
 import java.io.IOException;
 
 @Service
 public class TranslatorService {
 
-    // Change this URL to a public, online endpoint
-    private static final String API_URL = "https://libretranslate.de/translate";
-    private final OkHttpClient client = new OkHttpClient();
+    // You can get this from your Google Cloud project dashboard
+    private static final String GOOGLE_PROJECT_ID = "langtrans-472204";
+    private static final String GOOGLE_LOCATION = "global";
+
+    // Path to your downloaded JSON key file
+    // Make sure this file is in src/main/resources/
+    private static final String CREDENTIALS_PATH = "src/main/resources/LangTrans.json";
 
     public String translateText(String text, String source, String target) throws IOException {
-        RequestBody body = new FormBody.Builder()
-                .add("q", text)
-                .add("source", source)
-                .add("target", target)
-                .add("format", "text")
-                .build();
+        try (TranslationServiceClient client = TranslationServiceClient.create(
+                TranslationServiceSettings.newBuilder()
+                        .setCredentialsProvider(com.google.api.gax.core.FixedCredentialsProvider.create(GoogleCredentials.fromStream(new FileInputStream(CREDENTIALS_PATH))))
+                        .build())) {
 
-        Request request = new Request.Builder()
-                .url(API_URL)
-                .post(body)
-                .build();
+            LocationName parent = LocationName.of(GOOGLE_PROJECT_ID, GOOGLE_LOCATION);
 
-        try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                String errorResponse = response.body().string();
-                throw new IOException("API call failed: " + response.code() + " " + response.message() + " - " + errorResponse);
-            }
+            TranslateTextRequest request = TranslateTextRequest.newBuilder()
+                    .setParent(parent.toString())
+                    .setMimeType("text/plain")
+                    .setSourceLanguageCode(source)
+                    .setTargetLanguageCode(target)
+                    .addContents(text)
+                    .build();
 
-            String jsonResponse = response.body().string();
-            JSONObject obj = new JSONObject(jsonResponse);
-            return obj.getString("translatedText");
+            return client.translateText(request).getTranslations(0).getTranslatedText();
         }
     }
 }
